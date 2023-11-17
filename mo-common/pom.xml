@@ -1,0 +1,31 @@
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>mo</artifactId>
+        <groupId>ink.ckx</groupId>
+        <version>1.0.0</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>mo-common</artifactId>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>mo-common-core</module>
+        <module>mo-common-mybatis</module>
+        <module>mo-common-log</module>
+        <module>mo-common-redis</module>
+        <module>mo-common-web</module>
+        <module>mo-common-apidoc</module>
+        <module>mo-common-security</module>
+        <module>mo-common-feign</module>
+        <module>mo-common-sms</module>
+        <module>mo-common-oss</module>
+        <module>mo-common-job</module>
+    </modules>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+</project>

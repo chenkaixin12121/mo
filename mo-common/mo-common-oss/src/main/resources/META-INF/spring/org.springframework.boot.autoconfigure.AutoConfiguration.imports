@@ -1,0 +1,3 @@
+ink.ckx.mo.common.oss.config.AliyunOssConfig
+ink.ckx.mo.common.oss.controller.OssController
+ink.ckx.mo.common.oss.service.impl.OssServiceImpl

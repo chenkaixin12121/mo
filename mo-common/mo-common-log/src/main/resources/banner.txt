@@ -1,0 +1,7 @@
+  _____   ____
+ /     \ /  _ \
+|  Y Y  (  <_> )
+|__|_|  /\____/
+      \/
+
+Spring Boot Version: ${spring-boot.version}
