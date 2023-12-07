@@ -1,7 +1,7 @@
 # mo
 
-> 基于 java 17、Spring Boot 3、Spring Cloud 2022 的微服务开发脚手架，使用 Spring Authorization Server 提供对 OAuth2.1
-> 的支持，自定义密码及验证码模式认证，集成 XXL-JOB、阿里云OSS、SMS、支付宝支付及微信支付。
+> 基于 java 17、Kotlin 2.0.0-Beta2、Spring Boot 3、Spring Cloud 2022 的微服务开发脚手架，使用 Spring Authorization Server 提供对 OAuth2.1
+> 的支持，自定义密码及验证码模式认证，集成 XXL-JOB、阿里云OSS、SMS。
 
 #### 代码结构
 
@@ -9,8 +9,7 @@
 mo
 ├── mo-gateway  -- 网关服务
 ├── mo-auth     -- 认证中心
-├── mo-pay      -- 支付中心
-├── mo-system   -- 系统服务
+├── mo-admin    -- 管理系统
 ├── mo-member   -- 会员服务
 ├── mo-common   -- 公共服务
 ├────── mo-common-apidoc

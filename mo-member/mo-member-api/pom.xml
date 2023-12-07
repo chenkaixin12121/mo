@@ -21,6 +21,11 @@
 
         <dependency>
             <groupId>ink.ckx</groupId>
+            <artifactId>mo-common-mybatis</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>ink.ckx</groupId>
             <artifactId>mo-common-feign</artifactId>
         </dependency>
     </dependencies>

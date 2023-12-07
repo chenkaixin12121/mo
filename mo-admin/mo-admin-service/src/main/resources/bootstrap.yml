@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: mo-admin
+  profiles:
+    active: dev

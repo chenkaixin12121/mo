@@ -40,7 +40,7 @@ CREATE TABLE `member_user`  (
 -- ----------------------------
 -- Records of member_user
 -- ----------------------------
-INSERT INTO `member_user` VALUES (1725045829309419522, '18312341234', '陈开心', 1, '2023-11-18', 'https://file.ckx.ink/upload/2020/04/android-chrome-512x512.png', '123', 1, 0, '2023-11-16 14:59:10', '2023-11-16 14:59:10');
-INSERT INTO `member_user` VALUES (1725045829309419523, '18313331234', '陈开心333', 2, '2023-11-18', 'https://file.ckx.ink/upload/2020/04/android-chrome-512x512.png', '123', 2, 0, '2023-11-16 14:59:10', '2023-11-16 14:59:10');
+INSERT INTO `member_user` VALUES (1725045829309419522, '18312341234', '陈开心', 1, '2023-11-18', 'https://blog.ckx.ink/upload/2020/04/android-chrome-512x512.png', '123', 1, 0, '2023-11-16 14:59:10', '2023-11-16 14:59:10');
+INSERT INTO `member_user` VALUES (1725045829309419523, '18313331234', '陈开心333', 2, '2023-11-18', 'https://blog.ckx.ink/upload/2020/04/android-chrome-512x512.png', '123', 2, 0, '2023-11-16 14:59:10', '2023-11-16 14:59:10');
 
 SET FOREIGN_KEY_CHECKS = 1;

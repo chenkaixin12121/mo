@@ -1,2 +1,3 @@
 ink.ckx.mo.common.web.exception.GlobalExceptionHandler
 ink.ckx.mo.common.web.config.WebMvcConfig
+ink.ckx.mo.common.web.log.aspect.WebLogAspect

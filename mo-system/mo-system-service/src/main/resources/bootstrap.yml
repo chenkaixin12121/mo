@@ -1,5 +1,0 @@
-spring:
-  application:
-    name: mo-system
-  profiles:
-    active: dev

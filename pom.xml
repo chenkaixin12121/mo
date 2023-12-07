@@ -15,14 +15,14 @@
     <modules>
         <module>mo-auth</module>
         <module>mo-common</module>
-        <module>mo-system</module>
+        <module>mo-admin</module>
         <module>mo-member</module>
         <module>mo-gateway</module>
-        <module>mo-pay</module>
     </modules>
 
     <properties>
         <java.version>17</java.version>
+        <kotlin.version>2.0.0-Beta2</kotlin.version>
         <spring-boot.version>3.1.5</spring-boot.version>
         <spring-cloud.version>2022.0.4</spring-cloud.version>
         <spring-cloud-alibaba.version>2022.0.0.0</spring-cloud-alibaba.version>
@@ -44,8 +44,7 @@
         <aliyun-sdk-oss.version>3.16.3</aliyun-sdk-oss.version>
 
         <!-- 实体转换 -->
-        <mapstruct.version>1.5.3.Final</mapstruct.version>
-        <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
+        <mapstruct.version>1.6.0.Beta1</mapstruct.version>
 
         <!-- excel -->
         <easyexcel.version>3.1.0</easyexcel.version>
@@ -59,6 +58,9 @@
 
         <!-- ELK -->
         <logstash-logback.version>6.5</logstash-logback.version>
+
+        <!-- 日志 -->
+        <kotlin-logging-jvm.version>5.0.1</kotlin-logging-jvm.version>
     </properties>
 
     <dependencyManagement>
@@ -114,12 +116,12 @@
             </dependency>
             <dependency>
                 <groupId>ink.ckx</groupId>
-                <artifactId>mo-system-service</artifactId>
+                <artifactId>mo-admin-service</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>ink.ckx</groupId>
-                <artifactId>mo-system-api</artifactId>
+                <artifactId>mo-admin-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -164,11 +166,6 @@
             </dependency>
             <dependency>
                 <groupId>ink.ckx</groupId>
-                <artifactId>mo-pay</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>ink.ckx</groupId>
                 <artifactId>mo-common-job</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -181,6 +178,11 @@
             <dependency>
                 <groupId>com.baomidou</groupId>
                 <artifactId>mybatis-plus-annotation</artifactId>
+                <version>${mybatis-plus.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.baomidou</groupId>
+                <artifactId>mybatis-plus-extension</artifactId>
                 <version>${mybatis-plus.version}</version>
             </dependency>
 
@@ -228,12 +230,6 @@
             </dependency>
 
             <dependency>
-                <groupId>org.projectlombok</groupId>
-                <artifactId>lombok-mapstruct-binding</artifactId>
-                <version>${lombok-mapstruct-binding.version}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>com.alibaba</groupId>
                 <artifactId>easyexcel</artifactId>
                 <version>${easyexcel.version}</version>
@@ -258,9 +254,21 @@
             </dependency>
 
             <dependency>
-                <groupId>net.logstash.logback</groupId>
-                <artifactId>logstash-logback-encoder</artifactId>
-                <version>${logstash-logback.version}</version>
+                <groupId>io.github.oshai</groupId>
+                <artifactId>kotlin-logging-jvm</artifactId>
+                <version>${kotlin-logging-jvm.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <artifactId>kotlin-reflect</artifactId>
+                <version>${kotlin.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <artifactId>kotlin-stdlib</artifactId>
+                <version>${kotlin.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
