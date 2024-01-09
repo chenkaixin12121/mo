@@ -6,11 +6,13 @@ import ink.ckx.mo.common.core.result.Result
 import ink.ckx.mo.common.core.result.Result.Companion.fail
 import ink.ckx.mo.common.core.result.ResultCode
 import io.github.oshai.kotlinlogging.KotlinLogging
+import jakarta.validation.ConstraintViolationException
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression
 import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.validation.BindException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
+
 
 /**
  * @author chenkaixin
@@ -23,8 +25,14 @@ class GlobalExceptionHandler {
 
     private val log = KotlinLogging.logger {}
 
+    @ExceptionHandler(ConstraintViolationException::class)
+    fun <T> handlerHttpMessageNotReadableException(e: ConstraintViolationException): Result<T> {
+        val msg = e.constraintViolations.joinToString("；") { it.message }
+        return fail(ResultCode.PARAM_ERROR, msg)
+    }
+
     @ExceptionHandler(HttpMessageNotReadableException::class)
-    fun <T> handlerHttpMessageNotReadableException(e: HttpMessageNotReadableException?): Result<T> {
+    fun <T> handlerHttpMessageNotReadableException(e: HttpMessageNotReadableException): Result<T> {
         return fail(ResultCode.PARAM_ERROR, "解析参数失败")
     }
 

@@ -26,25 +26,25 @@ class AliyunOssConfig {
     }
 }
 
-class AliyunOssConfigProperties {
+data class AliyunOssConfigProperties(
 
     /**
      * 访问凭据
      */
-    var accessKeyId: String? = null
+    var accessKeyId: String? = null,
 
     /**
      * 凭据密钥
      */
-    var accessKeySecret: String? = null
+    var accessKeySecret: String? = null,
 
     /**
      * 服务 Endpoint
      */
-    var endpoint: String? = null
+    var endpoint: String? = null,
 
     /**
      * 存储桶名称
      */
-    var bucketName: String? = null
-}
+    var bucketName: String? = null,
+)

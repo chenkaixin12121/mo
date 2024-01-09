@@ -5,6 +5,7 @@ import ink.ckx.mo.admin.api.model.entity.SysUserRole
 import ink.ckx.mo.admin.mapper.SysUserRoleMapper
 import ink.ckx.mo.admin.service.SysUserRoleService
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 @Service
 class SysUserRoleServiceImpl : ServiceImpl<SysUserRoleMapper, SysUserRole>(), SysUserRoleService {
@@ -16,6 +17,7 @@ class SysUserRoleServiceImpl : ServiceImpl<SysUserRoleMapper, SysUserRole>(), Sy
      * @param roleIds
      * @return
      */
+    @Transactional(rollbackFor = [Exception::class])
     override fun saveUserRoles(userId: Long?, roleIds: List<Long?>) {
         // 用户原角色ID集合
         val userRoleIds = ktQuery()

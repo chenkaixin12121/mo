@@ -165,10 +165,10 @@ class SysRoleServiceImpl(
         if (roleIdList.isEmpty()) {
             return
         }
-        roleIdList.forEach { id ->
-            val count = KtQueryChainWrapper(SysUserRole()).eq(SysUserRole::roleId, id).count()
+        roleIdList.forEach {
+            val count = KtQueryChainWrapper(SysUserRole()).eq(SysUserRole::roleId, it).count()
             Assert.isFalse(count > 0) { BusinessException(ResultCode.PARAM_ERROR, "该角色已分配用户，无法删除") }
-            KtUpdateChainWrapper(SysRoleMenu()).eq(SysRoleMenu::roleId, id).remove()
+            KtUpdateChainWrapper(SysRoleMenu()).eq(SysRoleMenu::roleId, it).remove()
         }
         val result = removeByIds(roleIdList)
         if (result) {

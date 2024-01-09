@@ -1,0 +1,55 @@
+version: "3"
+
+services:
+  mo-gateway:
+    image: chenkaixin12121/mo-gateway:1.0.0
+    container_name: mo-gateway
+    restart: on-failure
+    ports:
+      - 8010:8010
+    env_file:
+      - ./config/mo/mo.env
+    volumes:
+      - ./data/web/mo-gateway/logs:/usr/local/web/mo-gateway/logs
+    networks:
+      - test-network
+  mo-auth:
+    image: chenkaixin12121/mo-auth:1.0.0
+    container_name: mo-auth
+    restart: on-failure
+    ports:
+      - 8020:8020
+    env_file:
+      - ./config/mo/mo.env
+    volumes:
+      - ./data/web/mo-auth/logs:/usr/local/web/mo-auth/logs
+    networks:
+      - test-network
+  mo-admin:
+    image: chenkaixin12121/mo-admin:1.0.0
+    container_name: mo-admin
+    restart: on-failure
+    ports:
+      - 8030:8030
+    env_file:
+    - ./config/mo/mo.env
+    volumes:
+      - ./data/web/mo-admin/logs:/usr/local/web/mo-admin/logs
+    networks:
+      - test-network
+  mo-member:
+    image: chenkaixin12121/mo-member:1.0.0
+    container_name: mo-member
+    restart: on-failure
+    ports:
+      - 8040:8040
+    env_file:
+      - ./config/mo/mo.env
+    volumes:
+      - ./data/web/mo-member/logs:/usr/local/web/mo-member/logs
+    networks:
+      - test-network
+
+networks:
+  test-network:
+    external: true

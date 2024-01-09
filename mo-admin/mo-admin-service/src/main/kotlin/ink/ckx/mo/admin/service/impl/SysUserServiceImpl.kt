@@ -126,6 +126,7 @@ class SysUserServiceImpl(
      * @param ids 用户ID，多个以英文逗号(,)分割
      * @return
      */
+    @Transactional(rollbackFor = [Exception::class])
     override fun deleteUsers(ids: String) {
         val idList = ids.split(',').mapNotNull { it.toLongOrNull() }
         if (idList.isNotEmpty()) {

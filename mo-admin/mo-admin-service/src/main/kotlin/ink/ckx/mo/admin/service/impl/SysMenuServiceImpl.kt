@@ -222,7 +222,8 @@ class SysMenuServiceImpl(
                 val children = recurResources(it.id, menuList)
                 resourceListVO.children = children
                 resourceListVO
-            }.toList()
+            }
+            .toList()
     }
 
     /**

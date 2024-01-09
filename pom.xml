@@ -31,7 +31,7 @@
         <spring-cloud-alibaba.version>2022.0.0.0</spring-cloud-alibaba.version>
 
         <!-- 工具类 -->
-        <hutool.version>5.8.18</hutool.version>
+        <hutool.version>5.8.25</hutool.version>
 
         <!-- mybatis -->
         <mybatis-plus.version>3.5.4.1</mybatis-plus.version>
@@ -57,13 +57,16 @@
         <xstream.version>1.4.17</xstream.version>
 
         <!-- 定时任务 -->
-        <xxl-job-core.version>2.2.0</xxl-job-core.version>
+        <xxl-job-core.version>2.4.0</xxl-job-core.version>
 
         <!-- ELK -->
         <logstash-logback.version>6.5</logstash-logback.version>
 
         <!-- 日志 -->
         <kotlin-logging-jvm.version>5.0.1</kotlin-logging-jvm.version>
+
+        <!-- docker-maven -->
+        <dockerfile-maven-plugin.version>1.4.13</dockerfile-maven-plugin.version>
     </properties>
 
     <dependencyManagement>
@@ -285,6 +288,12 @@
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-stdlib</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.spotify</groupId>
+            <artifactId>dockerfile-maven-plugin</artifactId>
+            <version>${dockerfile-maven-plugin.version}</version>
         </dependency>
     </dependencies>
 

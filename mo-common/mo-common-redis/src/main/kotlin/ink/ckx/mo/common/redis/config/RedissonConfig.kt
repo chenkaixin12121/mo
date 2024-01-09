@@ -38,9 +38,9 @@ class RedissonConfig {
     }
 }
 
-class RedissonConfigProperties {
-    var address: String = "localhost"
-    var password: String = "123456"
-    var database: Int = 0
-    var minIdle: Int = 1
-}
+data class RedissonConfigProperties(
+    var address: String = "redis://127.0.0.1:6379",
+    var password: String = "123456",
+    var database: Int = 0,
+    var minIdle: Int = 1,
+)

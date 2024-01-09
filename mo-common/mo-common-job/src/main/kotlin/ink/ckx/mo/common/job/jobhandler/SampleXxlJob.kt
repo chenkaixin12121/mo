@@ -1,22 +1,22 @@
 package ink.ckx.mo.common.job.jobhandler
 
-import com.xxl.job.core.biz.model.ReturnT
-import com.xxl.job.core.handler.IJobHandler
+import com.xxl.job.core.context.XxlJobHelper
 import com.xxl.job.core.handler.annotation.XxlJob
-import com.xxl.job.core.log.XxlJobLogger
-import com.xxl.job.core.util.ShardingUtil
-import io.github.oshai.kotlinlogging.KotlinLogging
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import java.io.BufferedInputStream
 import java.io.BufferedReader
+import java.io.DataOutputStream
 import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
+import java.util.*
 import java.util.concurrent.TimeUnit
+
 
 /**
  * XxlJob开发示例（Bean模式）
- *
  *
  * 开发步骤：
  * 1、任务开发：在Spring Bean实例中，开发Job方法；
@@ -29,93 +29,150 @@ import java.util.concurrent.TimeUnit
 @Component
 class SampleXxlJob {
 
-    private val log = KotlinLogging.logger {}
-
     /**
      * 1、简单任务示例（Bean模式）
      */
     @XxlJob("demoJobHandler")
-    fun demoJobHandler(param: String): ReturnT<String> {
-        XxlJobLogger.log("XXL-JOB, Hello World.")
+    fun demoJobHandler() {
+        XxlJobHelper.log("XXL-JOB, Hello World.")
+
         for (i in 0..4) {
-            XxlJobLogger.log("beat at:$i")
+            XxlJobHelper.log("beat at:$i")
             TimeUnit.SECONDS.sleep(2)
         }
-        return ReturnT.SUCCESS
+        // default success
     }
+
 
     /**
      * 2、分片广播任务
      */
     @XxlJob("shardingJobHandler")
-    fun shardingJobHandler(param: String): ReturnT<String> {
-
+    fun shardingJobHandler() {
         // 分片参数
-        val shardingVO = ShardingUtil.getShardingVo()
-        XxlJobLogger.log("分片参数：当前分片序号 = {}, 总分片数 = {}", shardingVO.index, shardingVO.total)
+
+        val shardIndex = XxlJobHelper.getShardIndex()
+        val shardTotal = XxlJobHelper.getShardTotal()
+
+        XxlJobHelper.log("分片参数：当前分片序号 = {}, 总分片数 = {}", shardIndex, shardTotal)
 
         // 业务逻辑
-        for (i in 0 until shardingVO.total) {
-            if (i == shardingVO.index) {
-                XxlJobLogger.log("第 {} 片, 命中分片开始处理", i)
+        for (i in 0 until shardTotal) {
+            if (i == shardIndex) {
+                XxlJobHelper.log("第 {} 片, 命中分片开始处理", i)
             } else {
-                XxlJobLogger.log("第 {} 片, 忽略", i)
+                XxlJobHelper.log("第 {} 片, 忽略", i)
             }
         }
-        return ReturnT.SUCCESS
     }
+
 
     /**
      * 3、命令行任务
      */
     @XxlJob("commandJobHandler")
-    fun commandJobHandler(param: String): ReturnT<String> {
+    fun commandJobHandler() {
+        val command = XxlJobHelper.getJobParam()
         var exitValue = -1
+
         var bufferedReader: BufferedReader? = null
         try {
             // command process
-            val process = Runtime.getRuntime().exec(param)
+            val processBuilder = ProcessBuilder()
+            processBuilder.command(command)
+            processBuilder.redirectErrorStream(true)
+
+            val process = processBuilder.start()
+
+            //Process process = Runtime.getRuntime().exec(command);
             val bufferedInputStream = BufferedInputStream(process.inputStream)
             bufferedReader = BufferedReader(InputStreamReader(bufferedInputStream))
 
             // command log
-            var line: String
-            while (bufferedReader.readLine().also { line = it } != null) {
-                XxlJobLogger.log(line)
+            var line: String?
+            while ((bufferedReader.readLine().also { line = it }) != null) {
+                XxlJobHelper.log(line)
             }
 
             // command exit
             process.waitFor()
             exitValue = process.exitValue()
         } catch (e: Exception) {
-            XxlJobLogger.log(e)
+            XxlJobHelper.log(e)
         } finally {
             bufferedReader?.close()
         }
-        return if (exitValue == 0) {
-            IJobHandler.SUCCESS
+
+        if (exitValue == 0) {
+            // default success
         } else {
-            ReturnT(IJobHandler.FAIL.code, "command exit value($exitValue) is failed")
+            XxlJobHelper.handleFail("command exit value($exitValue) is failed")
         }
     }
 
+
     /**
      * 4、跨平台Http任务
+     * 参数示例：
+     * "url: http://www.baidu.com\n" +
+     * "method: get\n" +
+     * "data: content\n";
      */
     @XxlJob("httpJobHandler")
-    fun httpJobHandler(param: String): ReturnT<String> {
+    fun httpJobHandler() {
+        // param parse
+
+        val param = XxlJobHelper.getJobParam()
+        if (param == null || param.trim { it <= ' ' }.length == 0) {
+            XxlJobHelper.log("param[$param] invalid.")
+
+            XxlJobHelper.handleFail()
+            return
+        }
+
+        val httpParams = param.split("\n".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+        var url: String? = null
+        var method: String? = null
+        var data: String? = null
+        for (httpParam in httpParams) {
+            if (httpParam.startsWith("url:")) {
+                url = httpParam.substring(httpParam.indexOf("url:") + 4).trim { it <= ' ' }
+            }
+            if (httpParam.startsWith("method:")) {
+                method = httpParam.substring(httpParam.indexOf("method:") + 7).trim { it <= ' ' }
+                    .uppercase(Locale.getDefault())
+            }
+            if (httpParam.startsWith("data:")) {
+                data = httpParam.substring(httpParam.indexOf("data:") + 5).trim { it <= ' ' }
+            }
+        }
+
+        // param valid
+        if (url == null || url.trim { it <= ' ' }.length == 0) {
+            XxlJobHelper.log("url[$url] invalid.")
+
+            XxlJobHelper.handleFail()
+            return
+        }
+        if (method == null || !mutableListOf("GET", "POST").contains(method)) {
+            XxlJobHelper.log("method[$method] invalid.")
+
+            XxlJobHelper.handleFail()
+            return
+        }
+        val isPostMethod = method == "POST"
 
         // request
         var connection: HttpURLConnection? = null
         var bufferedReader: BufferedReader? = null
-        return try {
+        try {
             // connection
-            val realUrl = URL(param)
+            val realUrl = URL(url)
             connection = realUrl.openConnection() as HttpURLConnection
 
             // connection setting
-            connection.requestMethod = "GET"
-            connection.doOutput = true
+            connection.requestMethod = method
+            connection!!.doOutput = isPostMethod
             connection.doInput = true
             connection.useCaches = false
             connection.readTimeout = 5 * 1000
@@ -127,7 +184,13 @@ class SampleXxlJob {
             // do connection
             connection.connect()
 
-            //Map<String, List<String>> map = connection.getHeaderFields();
+            // data
+            if (isPostMethod && data != null && data.trim { it <= ' ' }.length > 0) {
+                val dataOutputStream = DataOutputStream(connection.outputStream)
+                dataOutputStream.write(data.toByteArray(charset("UTF-8")))
+                dataOutputStream.flush()
+                dataOutputStream.close()
+            }
 
             // valid StatusCode
             val statusCode = connection.responseCode
@@ -138,22 +201,26 @@ class SampleXxlJob {
             // result
             bufferedReader = BufferedReader(InputStreamReader(connection.inputStream, "UTF-8"))
             val result = StringBuilder()
-            var line: String
-            while (bufferedReader.readLine().also { line = it } != null) {
+            var line: String?
+            while ((bufferedReader.readLine().also { line = it }) != null) {
                 result.append(line)
             }
             val responseMsg = result.toString()
-            XxlJobLogger.log(responseMsg)
-            ReturnT.SUCCESS
+
+            XxlJobHelper.log(responseMsg)
+
+            return
         } catch (e: Exception) {
-            XxlJobLogger.log(e)
-            ReturnT.FAIL
+            XxlJobHelper.log(e)
+
+            XxlJobHelper.handleFail()
+            return
         } finally {
             try {
                 bufferedReader?.close()
                 connection?.disconnect()
             } catch (e2: Exception) {
-                XxlJobLogger.log(e2)
+                XxlJobHelper.log(e2)
             }
         }
     }
@@ -162,16 +229,20 @@ class SampleXxlJob {
      * 5、生命周期任务示例：任务初始化与销毁时，支持自定义相关逻辑；
      */
     @XxlJob(value = "demoJobHandler2", init = "init", destroy = "destroy")
-    fun demoJobHandler2(param: String): ReturnT<String> {
-        XxlJobLogger.log("XXL-JOB, Hello World.")
-        return ReturnT.SUCCESS
+    fun demoJobHandler2() {
+        XxlJobHelper.log("XXL-JOB, Hello World.")
     }
 
     fun init() {
-        log.info { "init" }
+        logger.info("init")
     }
 
     fun destroy() {
-        log.info { "destroy" }
+        logger.info("destroy")
+    }
+
+
+    companion object {
+        private val logger: Logger = LoggerFactory.getLogger(SampleXxlJob::class.java)
     }
 }

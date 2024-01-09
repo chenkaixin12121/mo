@@ -14,6 +14,7 @@ enum class MenuTypeEnum(
     @JsonValue
     @EnumValue
     override var value: Int,
+
     override var label: String
 ) : IBaseEnum<Int> {
 

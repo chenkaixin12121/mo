@@ -14,8 +14,8 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 class XxlJobConfig {
 
-    @Value("\${xxl.job.address}")
-    private val xxlJobAddress: String? = null
+    @Value("\${xxl.job.adminAddress}")
+    private val xxlJobAdminAddress: String? = null
 
     @Value("\${spring.application.name}")
     private val applicationName: String? = null
@@ -29,12 +29,12 @@ class XxlJobConfig {
     fun xxlJobExecutor(): XxlJobSpringExecutor {
         log.info { ">>>>>>>>>>> xxl-job config init." }
         val xxlJobSpringExecutor = XxlJobSpringExecutor()
-        xxlJobSpringExecutor.setAdminAddresses(xxlJobAddress)
+        xxlJobSpringExecutor.setAdminAddresses(xxlJobAdminAddress)
         xxlJobSpringExecutor.setAppname(applicationName)
         xxlJobSpringExecutor.setAddress(null)
         xxlJobSpringExecutor.setIp(null)
         xxlJobSpringExecutor.setPort(serverPort!! / 10)
-        xxlJobSpringExecutor.setAccessToken(null)
+        xxlJobSpringExecutor.setAccessToken("chenkaixin12121")
         xxlJobSpringExecutor.setLogPath(null)
         xxlJobSpringExecutor.setLogRetentionDays(30)
         return xxlJobSpringExecutor

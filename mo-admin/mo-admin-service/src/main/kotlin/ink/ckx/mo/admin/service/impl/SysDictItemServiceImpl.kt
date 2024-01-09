@@ -12,6 +12,7 @@ import ink.ckx.mo.admin.converter.DictItemConverter
 import ink.ckx.mo.admin.mapper.SysDictItemMapper
 import ink.ckx.mo.admin.service.SysDictItemService
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 /**
  * 数据字典项业务实现类
@@ -100,6 +101,7 @@ class SysDictItemServiceImpl(
      * @param ids 字典数据项ID，多个以英文逗号(,)分割
      * @return
      */
+    @Transactional(rollbackFor = [Exception::class])
     override fun deleteDictItems(ids: String) {
         val idList = ids.split(',').mapNotNull { it.toLongOrNull() }
         // 删除字典数据项

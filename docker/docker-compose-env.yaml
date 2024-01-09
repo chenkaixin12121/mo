@@ -1,0 +1,69 @@
+version: "3"
+
+services:
+  mysql:
+    image: mysql:8.2.0
+    container_name: mysql8
+    command: mysqld
+    restart: on-failure
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - 3306:3306
+    volumes:
+      - ./config/mysql/my.cnf:/etc/my.cnf
+      - ./data/mysql/data:/var/lib/mysql
+      - ./data/mysql/log:/var/log/mysql
+      - ./config/initdb:/docker-entrypoint-initdb.d
+    networks:
+      - test-network
+  redis:
+    image: redis:7.2.3
+    container_name: redis7
+    command: redis-server /etc/redis/redis.conf
+    restart: on-failure
+    ports:
+      - 6379:6379
+    volumes:
+      - ./config/redis/redis.conf:/etc/redis/redis.conf
+      - ./data/redis/data:/data
+    networks:
+      - test-network
+  nacos:
+    image: nacos/nacos-server:v2.2.3
+    container_name: nacos2
+    restart: on-failure
+    ports:
+      - 8848:8848
+      - 9848:9848
+    env_file:
+      - ./config/nacos/nacos-standlone-mysql.env
+    volumes:
+      - ./data/nacos/logs:/home/nacos/logs
+    depends_on:
+      - mysql
+    networks:
+      - test-network
+  xxl-job:
+    image: xuxueli/xxl-job-admin:2.4.0
+    container_name: xxl-job2
+    restart: on-failure
+    ports:
+      - 5555:5555
+    volumes:
+      - ./data/xxl-job/logs:/data/applogs
+    environment:
+      PARAMS: '
+      --server.port=5555
+      --spring.datasource.url=jdbc:mysql://mysql:3306/xxl_job?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&serverTimezone=Asia/Shanghai
+      --spring.datasource.username=root
+      --spring.datasource.password=root
+      --xxl.job.accessToken=chenkaixin12121'
+    depends_on:
+      - mysql
+    networks:
+      - test-network
+
+networks:
+  test-network:
+    external: true

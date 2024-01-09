@@ -24,10 +24,10 @@ object IpUtil {
      * @param request
      * @return
      */
-    fun getIpAddr(request: HttpServletRequest): String {
+    fun getIpAddr(request: HttpServletRequest): String? {
         var ip = request.getHeader(HEADER_FORWARDED)
         for (clientId in CLIENT_IP_LIST) {
-            if (ip.isBlank() || UNKNOWN.equals(ip, ignoreCase = true)) {
+            if (ip.isNullOrBlank() || UNKNOWN.equals(ip, ignoreCase = true)) {
                 ip = request.getHeader(clientId)
             } else {
                 ip = request.remoteAddr

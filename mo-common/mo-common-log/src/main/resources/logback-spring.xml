@@ -7,7 +7,7 @@
     <!-- 应用名称 -->
     <springProperty scope="context" name="APP_NAME" source="spring.application.name" defaultValue="mo-default"/>
     <!--日志文件保存路径-->
-    <property name="LOG_HOME" value="/log/${APP_NAME}"/>
+    <property name="LOG_HOME" value="/usr/local/web/${APP_NAME}/logs"/>
 
     <!-- 输出到控制台 -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">

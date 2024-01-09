@@ -15,22 +15,13 @@ import java.security.spec.RSAPublicKeySpec
  * @since 2023/10/19
  */
 class KeyStoreKeyFactory @JvmOverloads constructor(
-    resource: Resource,
-    password: CharArray,
-    type: String = type(resource)
+    private val resource: Resource,
+    private val password: CharArray,
+    private val type: String = type(resource)
 ) {
 
-    private val resource: Resource
-    private val password: CharArray
     private val lock: Any = Any()
-    private val type: String
     private var store: KeyStore? = null
-
-    init {
-        this.resource = resource
-        this.password = password
-        this.type = type
-    }
 
     fun getKeyPair(alias: String): KeyPair {
         return this.getKeyPair(alias, password)

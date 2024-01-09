@@ -68,7 +68,7 @@ abstract class BaseAuthenticationProvider<T : BaseAuthenticationToken>(
     abstract fun checkClient(registeredClient: RegisteredClient)
 
     override fun authenticate(authentication: Authentication): Authentication {
-        val resourceOwnerBaseAuthentication = authentication as T
+        val resourceOwnerBaseAuthentication = authentication as BaseAuthenticationToken
         val authorizationGrantType = resourceOwnerBaseAuthentication.authorizationGrantType
 
         // 客户端是否支持此授权类型
@@ -193,7 +193,7 @@ abstract class BaseAuthenticationProvider<T : BaseAuthenticationToken>(
         )
     }
 
-    private fun getAuthenticatedClientElseThrowInvalidClient(authentication: T): OAuth2ClientAuthenticationToken {
+    private fun getAuthenticatedClientElseThrowInvalidClient(authentication: BaseAuthenticationToken): OAuth2ClientAuthenticationToken {
         return (authentication.principal as? OAuth2ClientAuthenticationToken)
             ?.takeIf { it.isAuthenticated }
             ?: throw MyAuthenticationException(ResultCode.INVALID_CLIENT)

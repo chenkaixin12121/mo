@@ -44,35 +44,35 @@ class AliyunSmsConfig {
     }
 }
 
-class AliyunSmsConfigProperties {
+data class AliyunSmsConfigProperties(
 
     /**
      * 访问凭据
      */
-    var accessKeyId: String? = null
+    var accessKeyId: String? = null,
 
     /**
      * 访问密钥
      */
-    var accessKeySecret: String? = null
+    var accessKeySecret: String? = null,
 
     /**
      * 服务 Endpoint
      */
-    var endpoint: String? = null
+    var endpoint: String? = null,
 
     /**
      * 地区
      */
-    var regionId: String? = null
+    var regionId: String? = null,
 
     /**
      * 模板代码
      */
-    var templateCode: String? = null
+    var templateCode: String? = null,
 
     /**
      * 签名名称
      */
-    var signName: String? = null
-}
+    var signName: String? = null,
+)
