@@ -33,11 +33,14 @@ class CaptchaGrantAuthenticationProvider(
         // 验证码校验
         val verifyCode = reqParameters[CoreConstant.VERIFY_CODE] as String
         val verifyCodeKey = reqParameters[CoreConstant.VERIFY_CODE_KEY] as String
-        val cacheCode = redisTemplate.opsForValue()[CoreConstant.VERIFY_CODE_CACHE_KEY_PREFIX + verifyCodeKey]
+        val cacheKey = CoreConstant.VERIFY_CODE_CACHE_KEY_PREFIX + verifyCodeKey
+        val cacheCode = redisTemplate.opsForValue()[cacheKey]
         val mathGenerator = MathGenerator()
         if (cacheCode.isNullOrBlank() || !mathGenerator.verify(cacheCode, verifyCode)) {
             throw MyAuthenticationException(ResultCode.CODE_FAIL)
         }
+        // 校验通过后删除验证码缓存，防止验证码被重复使用
+        redisTemplate.delete(cacheKey)
         // 用户名密码校验
         val username = reqParameters[OAuth2ParameterNames.USERNAME] as String
         val password = reqParameters[OAuth2ParameterNames.PASSWORD] as String

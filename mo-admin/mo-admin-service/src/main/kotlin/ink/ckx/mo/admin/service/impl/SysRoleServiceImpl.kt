@@ -197,7 +197,7 @@ class SysRoleServiceImpl(
     @Transactional(rollbackFor = [Exception::class])
     override fun updateRoleMenus(roleId: Long, menuIds: List<Long>) {
         // 删除角色菜单
-        KtUpdateChainWrapper(SysRoleMenu()).eq(SysRoleMenu::id, roleId).remove()
+        KtUpdateChainWrapper(SysRoleMenu()).eq(SysRoleMenu::roleId, roleId).remove()
         // 新增角色菜单
         if (menuIds.isNotEmpty()) {
             val roleMenus = menuIds.map { SysRoleMenu(null, roleId, it) }.toList()

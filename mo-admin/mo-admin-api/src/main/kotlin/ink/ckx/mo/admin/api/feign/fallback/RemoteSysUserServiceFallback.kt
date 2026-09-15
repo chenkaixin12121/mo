@@ -15,8 +15,8 @@ class RemoteSysUserServiceFallback : RemoteSysUserService {
 
     private val log = KotlinLogging.logger {}
 
-    override fun getUserInfo(username: String, from: String): SysUserInfoDTO {
+    override fun getUserInfo(username: String, from: String): SysUserInfoDTO? {
         log.error { "feign 远程调用系统用户服务异常后的降级方法" }
-        return SysUserInfoDTO()
+        return null
     }
 }

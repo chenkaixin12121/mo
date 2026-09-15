@@ -10,6 +10,7 @@ import jakarta.validation.ConstraintViolationException
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression
 import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.validation.BindException
+import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 
@@ -42,6 +43,12 @@ class GlobalExceptionHandler {
         return fail(ResultCode.PARAM_ERROR, msg)
     }
 
+    @ExceptionHandler(MethodArgumentNotValidException::class)
+    fun <T> handlerMethodArgumentNotValidException(e: MethodArgumentNotValidException): Result<T> {
+        val msg = e.bindingResult.allErrors.joinToString(separator = "；") { it.defaultMessage ?: "" }
+        return fail(ResultCode.PARAM_ERROR, msg)
+    }
+
     @ExceptionHandler(BusinessException::class)
     fun <T> handlerBusinessException(e: BusinessException): Result<T> {
         val resultCode: ResultCode = e.resultCode
@@ -50,11 +57,11 @@ class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception::class)
     fun <T> handleException(e: Exception): Result<T> {
-        val errorMsg = e.message
-        if (StrUtil.contains(errorMsg, "Access Denied")) {
+        if (StrUtil.contains(e.message, "Access Denied")) {
             return fail(ResultCode.ACCESS_DENIED)
         }
         log.error(e) { "未知异常:" }
-        return fail(errorMsg!!)
+        // 兜底异常不向客户端暴露内部错误信息，统一返回失败
+        return fail(ResultCode.FAIL)
     }
 }

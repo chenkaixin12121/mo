@@ -47,8 +47,8 @@ class SysDictController(
     @PreAuthorize("@pms.hasPerm('sys:dict:item:save')")
     @Operation(summary = "新增字典数据项")
     @PostMapping("/items")
-    fun saveDictItem(@RequestBody @Valid DictItemForm: DictItemForm): Result<Long?> {
-        val itemId = dictItemService.saveDictItem(DictItemForm)
+    fun saveDictItem(@RequestBody @Valid dictItemForm: DictItemForm): Result<Long?> {
+        val itemId = dictItemService.saveDictItem(dictItemForm)
         return success(itemId)
     }
 
@@ -57,9 +57,9 @@ class SysDictController(
     @PutMapping("/items/{itemId}")
     fun updateDictItem(
         @Parameter(description = "字典数据项ID") @PathVariable itemId: Long,
-        @RequestBody @Valid DictItemForm: DictItemForm
+        @RequestBody @Valid dictItemForm: DictItemForm
     ): Result<Void?> {
-        dictItemService.updateDictItem(itemId, DictItemForm)
+        dictItemService.updateDictItem(itemId, dictItemForm)
         return success()
     }
 
@@ -98,7 +98,7 @@ class SysDictController(
     @PutMapping("/types/{typeId}")
     fun updateDict(
         @Parameter(description = "字典类型ID") @PathVariable typeId: Long,
-        @RequestBody dictTypeForm: DictTypeForm
+        @RequestBody @Valid dictTypeForm: DictTypeForm
     ): Result<Void?> {
         dictTypeService.updateDictType(typeId, dictTypeForm)
         return success()

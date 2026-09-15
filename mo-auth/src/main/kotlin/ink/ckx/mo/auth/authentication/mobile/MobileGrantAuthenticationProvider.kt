@@ -5,7 +5,8 @@ import ink.ckx.mo.auth.exception.MyAuthenticationException
 import ink.ckx.mo.auth.userdetails.member.MemberUserDetailsService
 import ink.ckx.mo.common.core.constant.CoreConstant
 import ink.ckx.mo.common.core.result.ResultCode
-import org.springframework.beans.factory.annotation.Value
+import org.springframework.core.env.Environment
+import org.springframework.core.env.Profiles
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.oauth2.core.AuthorizationGrantType
@@ -23,19 +24,17 @@ class MobileGrantAuthenticationProvider(
     authorizationService: OAuth2AuthorizationService,
     tokenGenerator: OAuth2TokenGenerator<out OAuth2Token>,
     private val memberUserDetailsService: MemberUserDetailsService,
-    private val redisTemplate: RedisTemplate<String, String>
+    private val redisTemplate: RedisTemplate<String, String>,
+    private val environment: Environment
 ) : BaseAuthenticationProvider<MobileGrantAuthenticationToken>(authorizationService, tokenGenerator) {
-
-    @Value("\${spring.profiles.active}")
-    private val env: String? = null
 
     override fun buildToken(reqParameters: Map<String, Any>): UsernamePasswordAuthenticationToken {
         // 手机号
         val mobile = reqParameters[CoreConstant.MOBILE] as String
         // 短信验证码
         val smsCode = reqParameters[CoreConstant.SMS_CODE] as String
-        // 校验
-        val flag = ("dev" == env && CoreConstant.SMS_CODE_VALUE == smsCode)
+        // 仅 dev 环境允许使用固定验证码绕过，方便本地联调
+        val flag = (environment.acceptsProfiles(Profiles.of("dev")) && CoreConstant.SMS_CODE_VALUE == smsCode)
         if (!flag) {
             val cacheKey = CoreConstant.SMS_CODE_PREFIX + mobile
             val correctCode = redisTemplate.opsForValue()[cacheKey]

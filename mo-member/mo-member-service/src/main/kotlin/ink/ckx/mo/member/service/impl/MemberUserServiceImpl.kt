@@ -42,7 +42,11 @@ class MemberUserServiceImpl(
                 MemberUser::birthday,
                 MemberUser::createTime
             )
-            .eq(!userPageQuery.keywords.isNullOrBlank(), MemberUser::mobile, userPageQuery.keywords)
+            .and(!userPageQuery.keywords.isNullOrBlank()) {
+                it.like(MemberUser::mobile, userPageQuery.keywords)
+                    .or()
+                    .like(MemberUser::nickName, userPageQuery.keywords)
+            }
             .page(Page(userPageQuery.pageNum, userPageQuery.pageSize))
         return userConverter.entity2PageVO(memberUserPage)
     }

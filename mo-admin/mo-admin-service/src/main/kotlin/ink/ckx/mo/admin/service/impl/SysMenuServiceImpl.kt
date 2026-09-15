@@ -1,10 +1,12 @@
 package ink.ckx.mo.admin.service.impl
 
+import com.baomidou.mybatisplus.extension.kotlin.KtUpdateChainWrapper
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl
 import ink.ckx.mo.admin.api.constant.AdminConstant
 import ink.ckx.mo.admin.api.enums.MenuTypeEnum
 import ink.ckx.mo.admin.api.model.bo.RouteBO
 import ink.ckx.mo.admin.api.model.entity.SysMenu
+import ink.ckx.mo.admin.api.model.entity.SysRoleMenu
 import ink.ckx.mo.admin.api.model.form.MenuForm
 import ink.ckx.mo.admin.api.model.query.MenuListQuery
 import ink.ckx.mo.admin.api.model.vo.menu.*
@@ -15,6 +17,7 @@ import ink.ckx.mo.common.core.constant.CoreConstant
 import ink.ckx.mo.common.web.enums.StatusEnum
 import ink.ckx.mo.common.web.model.Option
 import org.springframework.data.redis.core.RedisTemplate
+import org.springframework.data.redis.core.ScanOptions
 import org.springframework.stereotype.Service
 import java.util.*
 
@@ -38,16 +41,14 @@ class SysMenuServiceImpl(
             )
             .orderByDesc(SysMenu::sort)
             .list()
-        val cacheMenuIds = sysMenuList.map(SysMenu::id).toMutableList()
-        return sysMenuList.map {
-            val parentId = it.parentId
-            // parentId不在当前菜单ID的列表，说明为顶级菜单ID，根据此ID作为递归的开始条件节点
-            if (parentId !in cacheMenuIds) {
-                cacheMenuIds.add(parentId)
-                return@map recurMenus(parentId, sysMenuList)
-            }
-            LinkedList<MenuListVO>()
-        }.toList().flatten()
+        // 当前列表内所有菜单的ID集合
+        val menuIds = sysMenuList.mapTo(mutableSetOf()) { it.id }
+        // 父节点ID不在当前列表中的菜单即为顶级节点，从该父节点ID开始递归建树
+        return sysMenuList
+            .map { it.parentId }
+            .distinct()
+            .filter { it !in menuIds }
+            .flatMap { recurMenus(it, sysMenuList) }
     }
 
     override fun saveMenu(menuForm: MenuForm): Long? {
@@ -87,12 +88,23 @@ class SysMenuServiceImpl(
     }
 
     override fun deleteMenu(menuId: Long) {
-        val result = ktUpdate()
+        // 查询待删除的菜单ID集合（自身及子孙节点）
+        val deleteMenuIds = ktQuery()
+            .select(SysMenu::id)
             .eq(SysMenu::id, menuId)
             .or()
             .apply("CONCAT (',',tree_path,',') LIKE CONCAT('%,',{0},',%')", menuId)
-            .remove()
+            .list()
+            .mapNotNull(SysMenu::id)
+        if (deleteMenuIds.isEmpty()) {
+            return
+        }
+        val result = removeByIds(deleteMenuIds)
         if (result) {
+            // 删除菜单与角色的关联关系
+            KtUpdateChainWrapper(SysRoleMenu())
+                .`in`(SysRoleMenu::menuId, deleteMenuIds)
+                .remove()
             refreshRolePerm()
         }
     }
@@ -150,7 +162,14 @@ class SysMenuServiceImpl(
     }
 
     override fun refreshRolePerm() {
-        val deleteKeys = redisTemplate.keys(CoreConstant.ROLE_PERMS_CACHE_KEY_PREFIX + "*")
+        // 使用 SCAN 遍历匹配的缓存 key，避免 KEYS 命令阻塞 Redis
+        val pattern = CoreConstant.ROLE_PERMS_CACHE_KEY_PREFIX + "*"
+        val deleteKeys = mutableListOf<String>()
+        redisTemplate.scan(ScanOptions.scanOptions().match(pattern).count(1000).build()).use { cursor ->
+            while (cursor.hasNext()) {
+                deleteKeys.add(cursor.next())
+            }
+        }
         if (deleteKeys.isNotEmpty()) {
             redisTemplate.delete(deleteKeys)
         }

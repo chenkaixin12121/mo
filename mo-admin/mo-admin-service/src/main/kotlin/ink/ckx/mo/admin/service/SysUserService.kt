@@ -10,6 +10,7 @@ import ink.ckx.mo.admin.api.model.vo.user.UserDetailVO
 import ink.ckx.mo.admin.api.model.vo.user.UserExportVO
 import ink.ckx.mo.admin.api.model.vo.user.UserLoginVO
 import ink.ckx.mo.admin.api.model.vo.user.UserPageVO
+import ink.ckx.mo.common.web.enums.StatusEnum
 
 /**
  * 用户业务接口
@@ -66,6 +67,15 @@ interface SysUserService : IService<SysUser> {
      * @return
      */
     fun updatePassword(userId: Long, password: String)
+
+    /**
+     * 修改用户状态
+     *
+     * @param userId 用户ID
+     * @param status 用户状态
+     * @return
+     */
+    fun updateUserStatus(userId: Long, status: StatusEnum)
 
     /**
      * 根据用户名获取认证信息

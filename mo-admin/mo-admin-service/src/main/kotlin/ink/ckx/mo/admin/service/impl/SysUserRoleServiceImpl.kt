@@ -18,6 +18,15 @@ class SysUserRoleServiceImpl : ServiceImpl<SysUserRoleMapper, SysUserRole>(), Sy
      * @return
      */
     @Transactional(rollbackFor = [Exception::class])
+    override fun deleteUserRoles(userIds: Collection<Long>) {
+        if (userIds.isNotEmpty()) {
+            ktUpdate()
+                .`in`(SysUserRole::userId, userIds)
+                .remove()
+        }
+    }
+
+    @Transactional(rollbackFor = [Exception::class])
     override fun saveUserRoles(userId: Long?, roleIds: List<Long?>) {
         // 用户原角色ID集合
         val userRoleIds = ktQuery()

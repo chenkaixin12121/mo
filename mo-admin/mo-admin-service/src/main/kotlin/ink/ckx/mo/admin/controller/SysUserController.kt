@@ -1,10 +1,10 @@
 package ink.ckx.mo.admin.controller
 
 import com.alibaba.excel.EasyExcel
-import com.baomidou.mybatisplus.extension.kotlin.KtUpdateChainWrapper
 import ink.ckx.mo.admin.api.model.dto.SysUserInfoDTO
-import ink.ckx.mo.admin.api.model.entity.SysUser
 import ink.ckx.mo.admin.api.model.form.UserForm
+import ink.ckx.mo.admin.api.model.form.UserPasswordForm
+import ink.ckx.mo.admin.api.model.form.UserStatusForm
 import ink.ckx.mo.admin.api.model.query.*
 import ink.ckx.mo.admin.api.model.vo.user.*
 import ink.ckx.mo.admin.listener.UserImportListener
@@ -93,23 +93,20 @@ class SysUserController(
     @PatchMapping(value = ["/{userId}/password"])
     fun updatePassword(
         @Parameter(description = "用户ID") @PathVariable userId: Long,
-        @Parameter(description = "密码") @RequestParam password: String
+        @RequestBody @Valid userPasswordForm: UserPasswordForm
     ): Result<Void?> {
-        userService.updatePassword(userId, password)
+        userService.updatePassword(userId, userPasswordForm.password!!)
         return success()
     }
 
     @PreAuthorize("@pms.hasPerm('sys:user:update')")
     @Operation(summary = "修改用户状态")
     @PatchMapping(value = ["/{userId}/status"])
-    fun updateUserPassword(
+    fun updateUserStatus(
         @Parameter(description = "用户ID") @PathVariable userId: Long,
-        @Parameter(description = "用户状态") @RequestParam status: Int,
+        @RequestBody @Valid userStatusForm: UserStatusForm
     ): Result<Void?> {
-        KtUpdateChainWrapper(SysUser())
-            .eq(SysUser::id, userId)
-            .set(SysUser::status, status)
-            .update()
+        userService.updateUserStatus(userId, userStatusForm.status!!)
         return success()
     }
 
@@ -147,14 +144,13 @@ class SysUserController(
     @Operation(summary = "导入用户")
     @PostMapping("/_import")
     fun importUsers(
-        @Parameter(description = "部门ID") deptId: Long,
-        @Parameter(description = "角色ID") roleIds: String,
-        file: MultipartFile
+        @Parameter(description = "部门ID") @RequestParam("deptId") deptId: Long,
+        @Parameter(description = "角色ID") @RequestParam("roleIds") roleIds: String,
+        @RequestParam("file") file: MultipartFile
     ): Result<String?> {
         val listener = UserImportListener(deptId, roleIds)
         EasyExcel.read(file.inputStream, UserImportVO::class.java, listener).sheet().doRead()
-        val msg = listener.msg.toString()
-        return success(msg)
+        return success(listener.getMsg())
     }
 
     @PreAuthorize("@pms.hasPerm('sys:user:_export')")

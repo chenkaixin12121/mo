@@ -36,7 +36,7 @@ enum class ResultCode(
     PASSWORD_VERIFY_FAIL("A010", "密码不正确"),
     USER_NOT_EXIST("A011", "用户不存在"),
     USER_DISABLE(
-        "A011",
+        "A023",
         "该用户已禁用"
     ),
     INVALID_CLIENT("A012", "客户端认证失败"),

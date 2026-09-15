@@ -24,6 +24,7 @@ import ink.ckx.mo.common.security.util.getExp
 import ink.ckx.mo.common.security.util.getJti
 import ink.ckx.mo.common.security.util.getRoles
 import ink.ckx.mo.common.security.util.getUserId
+import ink.ckx.mo.common.web.enums.StatusEnum
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
@@ -74,6 +75,7 @@ class SysUserServiceImpl(
      * @param userForm 用户表单对象
      * @return
      */
+    @Transactional(rollbackFor = [Exception::class])
     override fun saveUser(userForm: UserForm): Long? {
         val username = userForm.username
         val count = ktQuery().eq(SysUser::username, username).count()
@@ -130,6 +132,9 @@ class SysUserServiceImpl(
     override fun deleteUsers(ids: String) {
         val idList = ids.split(',').mapNotNull { it.toLongOrNull() }
         if (idList.isNotEmpty()) {
+            // 删除用户角色关联
+            userRoleService.deleteUserRoles(idList)
+            // 删除用户
             this.removeByIds(idList)
         }
     }
@@ -146,6 +151,20 @@ class SysUserServiceImpl(
         ktUpdate()
             .eq(SysUser::id, userId)
             .set(SysUser::password, encryptedPassword)
+            .update()
+    }
+
+    /**
+     * 修改用户状态
+     *
+     * @param userId 用户ID
+     * @param status 用户状态
+     * @return
+     */
+    override fun updateUserStatus(userId: Long, status: StatusEnum) {
+        ktUpdate()
+            .eq(SysUser::id, userId)
+            .set(SysUser::status, status)
             .update()
     }
 
@@ -170,6 +189,7 @@ class SysUserServiceImpl(
             .select(SysUser::id, SysUser::nickname, SysUser::avatar)
             .eq(SysUser::id, getUserId())
             .one()
+            ?: throw BusinessException(ResultCode.USER_NOT_EXIST)
         // entity -> VO
         val userLoginVO = userConverter.entity2LoginUser(sysUser)
 
@@ -189,7 +209,8 @@ class SysUserServiceImpl(
 
     override fun logout() {
         val jti = getJti()
-        val expireTime = getExp()
+        // JWT 的 exp 为秒级时间戳，需统一换算为毫秒后再与当前时间比较
+        val expireTime = getExp() * 1000L
         val currentTime = System.currentTimeMillis()
         // token未过期，添加至缓存作为黑名单限制访问，缓存时间为token过期剩余时间
         if (expireTime > currentTime) {

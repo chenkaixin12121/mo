@@ -1,9 +1,11 @@
 package ink.ckx.mo.admin.service.impl
 
 import cn.hutool.core.bean.BeanUtil
+import com.baomidou.mybatisplus.extension.kotlin.KtUpdateChainWrapper
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl
 import ink.ckx.mo.admin.api.constant.AdminConstant
 import ink.ckx.mo.admin.api.model.entity.SysDept
+import ink.ckx.mo.admin.api.model.entity.SysUser
 import ink.ckx.mo.admin.api.model.form.DeptForm
 import ink.ckx.mo.admin.api.model.query.DeptListQuery
 import ink.ckx.mo.admin.api.model.vo.dept.DeptDetailVO
@@ -14,6 +16,7 @@ import ink.ckx.mo.admin.service.SysDeptService
 import ink.ckx.mo.common.web.enums.StatusEnum
 import ink.ckx.mo.common.web.model.Option
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 /**
  * 部门业务实现类
@@ -119,18 +122,32 @@ class SysDeptServiceImpl(
         updateById(sysDept)
     }
 
+    @Transactional(rollbackFor = [Exception::class])
     override fun deleteByIds(ids: String) {
         val idList = ids.split(',').mapNotNull { it.toLongOrNull() }
-        if (idList.isNotEmpty()) {
-            // 删除部门及子部门
-            idList.forEach {
-                ktUpdate()
-                    .eq(SysDept::id, it)
-                    .or()
-                    .apply("concat (',',tree_path,',') like concat('%,',{0},',%')", it)
-                    .remove()
-            }
+        if (idList.isEmpty()) {
+            return
         }
+        // 查询待删除的部门ID集合（自身及子部门）
+        val deleteDeptIds = idList.flatMap { id ->
+            ktQuery()
+                .select(SysDept::id)
+                .eq(SysDept::id, id)
+                .or()
+                .apply("concat (',',tree_path,',') like concat('%,',{0},',%')", id)
+                .list()
+                .mapNotNull(SysDept::id)
+        }.toSet()
+        if (deleteDeptIds.isEmpty()) {
+            return
+        }
+        // 删除部门及子部门
+        removeByIds(deleteDeptIds)
+        // 清理属于这些部门用户的部门归属
+        KtUpdateChainWrapper(SysUser())
+            .`in`(SysUser::deptId, deleteDeptIds)
+            .set(SysUser::deptId, null as Long?)
+            .update()
     }
 
     /**

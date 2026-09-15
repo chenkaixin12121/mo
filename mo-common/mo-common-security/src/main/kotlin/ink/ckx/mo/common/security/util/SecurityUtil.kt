@@ -13,16 +13,16 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.oauth2.jwt.JwtClaimNames
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken
 
-fun getDeptId(): Int {
-    return Convert.toInt(getTokenAttributes()[CoreConstant.DEPT_ID])
+fun getDeptId(): Long {
+    return Convert.toLong(getTokenAttributes()[CoreConstant.DEPT_ID])
 }
 
 fun getDataScope(): Int {
     return Convert.toInt(getTokenAttributes()[CoreConstant.DATA_SCOPE])
 }
 
-fun getExp(): Int {
-    return Convert.toInt(getTokenAttributes()[JwtClaimNames.EXP])
+fun getExp(): Long {
+    return Convert.toLong(getTokenAttributes()[JwtClaimNames.EXP])
 }
 
 fun getJti(): String {
@@ -35,7 +35,7 @@ fun getAud(): String? {
         return null
     }
     val aud = JSONUtil.toJsonStr(tokenAttributes[JwtClaimNames.AUD])
-    return JSONUtil.toList(aud, String::class.java)[0]
+    return JSONUtil.toList(aud, String::class.java).firstOrNull()
 }
 
 /**
@@ -43,8 +43,8 @@ fun getAud(): String? {
  *
  * @return
  */
-fun getUserId(): Int {
-    return Convert.toInt(getTokenAttributes()[CoreConstant.USER_ID])
+fun getUserId(): Long {
+    return Convert.toLong(getTokenAttributes()[CoreConstant.USER_ID])
 }
 
 /**

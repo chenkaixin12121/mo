@@ -75,8 +75,8 @@ class UserImportListener(
         if (gender.isNullOrBlank()) {
             validationMsg.append("性别为空；")
         } else {
-            val validGender = GenderEnum.entries.toTypedArray().none { it.label == gender }
-            if (validGender) {
+            val invalidGender = GenderEnum.entries.none { it.label == gender }
+            if (invalidGender) {
                 validationMsg.append("性别不正确；")
             }
         }

@@ -55,7 +55,7 @@ interface IBaseEnum<T> {
         fun <E> getLabelByValue(value: Any, clazz: Class<E>): String where E : Enum<E>, E : IBaseEnum<*> {
             Objects.requireNonNull(value)
             val allEnums = EnumSet.allOf(clazz) // 获取类型下的所有枚举
-            val matchEnum = allEnums.first { ObjectUtil.equal(it.value, value) }
+            val matchEnum = allEnums.firstOrNull { ObjectUtil.equal(it.value, value) }
             return matchEnum?.label.toString()
         }
 
@@ -67,11 +67,11 @@ interface IBaseEnum<T> {
          * @param <E>
          * @return </E>
          */
-        fun <E> getValueByLabel(label: String, clazz: Class<E>): Any where E : Enum<E>, E : IBaseEnum<*> {
+        fun <E> getValueByLabel(label: String, clazz: Class<E>): Any? where E : Enum<E>, E : IBaseEnum<*> {
             Objects.requireNonNull(label)
             val allEnums = EnumSet.allOf(clazz) // 获取类型下的所有枚举
-            val matchEnum = allEnums.first { ObjectUtil.equal(it.label, label) }
-            return matchEnum?.label.toString()
+            val matchEnum = allEnums.firstOrNull { ObjectUtil.equal(it.label, label) }
+            return matchEnum?.value
         }
     }
 }

@@ -26,6 +26,7 @@ import org.apache.catalina.util.StandardSessionIdGenerator
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.annotation.Order
+import org.springframework.core.env.Environment
 import org.springframework.core.io.ClassPathResource
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.jdbc.core.JdbcTemplate
@@ -60,6 +61,7 @@ class AuthorizationServerConfig(
     private val memberUserDetailsService: MemberUserDetailsService,
     private val sysUserDetailsService: SysUserDetailsService,
     private val redisTemplate: RedisTemplate<String, String>,
+    private val environment: Environment,
 ) {
 
     @Bean
@@ -89,7 +91,7 @@ class AuthorizationServerConfig(
                                 PasswordGrantAuthenticationProvider(
                                     authorizationService, tokenGenerator, sysUserDetailsService, passwordEncoder()
                                 ), MobileGrantAuthenticationProvider(
-                                    authorizationService, tokenGenerator, memberUserDetailsService, redisTemplate
+                                    authorizationService, tokenGenerator, memberUserDetailsService, redisTemplate, environment
                                 ), CaptchaGrantAuthenticationProvider(
                                     authorizationService,
                                     tokenGenerator,
@@ -172,7 +174,7 @@ class AuthorizationServerConfig(
         val privateKey = keyPair.private as RSAPrivateKey
         val rsaKey = RSAKey.Builder(publicKey)
             .privateKey(privateKey)
-//            .keyID(UUID.randomUUID().toString())
+            .keyID("jwt")
             .build()
         val jwkSet = JWKSet(rsaKey)
         return ImmutableJWKSet(jwkSet)
@@ -214,7 +216,7 @@ class AuthorizationServerConfig(
         return OAuth2TokenCustomizer<JwtEncodingContext> { context ->
             val claims = context.claims
             if (context.tokenType == OAuth2TokenType.ACCESS_TOKEN) {
-                claims.claim(JwtClaimNames.JTI, UUID.randomUUID())
+                claims.claim(JwtClaimNames.JTI, UUID.randomUUID().toString())
                 // Customize headers/claims for access_token
                 val principal = context.getPrincipal<Authentication>().principal
                 if (principal is SysUserDetails) {

@@ -45,9 +45,11 @@ class SysDictTypeServiceImpl(
         // 查询数据
         val dictTypePage = ktQuery()
             .select(SysDictType::id, SysDictType::name, SysDictType::code, SysDictType::status)
-            .like(!keywords.isNullOrBlank(), SysDictType::name, keywords)
-            .or()
-            .like(!keywords.isNullOrBlank(), SysDictType::code, keywords)
+            .and(!keywords.isNullOrBlank()) {
+                it.like(SysDictType::name, keywords)
+                    .or()
+                    .like(SysDictType::code, keywords)
+            }
             .orderByDesc(SysDictType::updateTime)
             .page(Page(pageNum, pageSize))
 

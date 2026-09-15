@@ -7,6 +7,7 @@ import ink.ckx.mo.common.core.result.ResultCode
 import ink.ckx.mo.member.api.feign.RemoteMemberUserService
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UserDetailsService
+import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.stereotype.Service
 
 /**
@@ -20,7 +21,8 @@ class MemberUserDetailsService(
 ) : UserDetailsService {
 
     override fun loadUserByUsername(username: String): UserDetails? {
-        return null
+        // 会员用户不支持用户名密码登录，仅支持手机号验证码登录
+        throw UsernameNotFoundException("会员用户不支持用户名密码登录")
     }
 
     fun loadUserByMobile(mobile: String): UserDetails {

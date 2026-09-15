@@ -14,7 +14,6 @@ import java.time.LocalDateTime
 class MyMetaObjectHandler : MetaObjectHandler {
 
     override fun insertFill(metaObject: MetaObject) {
-//        this.strictInsertFill(metaObject, "deleted", { 0 }, Int::class.java) TODO
         this.strictInsertFill(metaObject, "createTime", { LocalDateTime.now() }, LocalDateTime::class.java)
         this.strictUpdateFill(metaObject, "updateTime", { LocalDateTime.now() }, LocalDateTime::class.java)
     }
