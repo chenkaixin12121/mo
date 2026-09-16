@@ -8,10 +8,10 @@ import com.baomidou.mybatisplus.extension.kotlin.KtQueryChainWrapper
 import ink.ckx.mo.admin.api.model.entity.SysUser
 import ink.ckx.mo.admin.api.model.entity.SysUserRole
 import ink.ckx.mo.admin.api.model.vo.user.UserImportVO
+import ink.ckx.mo.admin.config.MoSecurityProperties
 import ink.ckx.mo.admin.converter.UserConverter
 import ink.ckx.mo.admin.service.SysUserRoleService
 import ink.ckx.mo.admin.service.SysUserService
-import ink.ckx.mo.common.core.constant.CoreConstant
 import ink.ckx.mo.common.web.enums.GenderEnum
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.security.crypto.password.PasswordEncoder
@@ -40,6 +40,8 @@ class UserImportListener(
     private val userConverter: UserConverter = SpringUtil.getBean(UserConverter::class.java)
 
     private val userRoleService: SysUserRoleService = SpringUtil.getBean(SysUserRoleService::class.java)
+
+    private val moSecurityProperties: MoSecurityProperties = SpringUtil.getBean(MoSecurityProperties::class.java)
 
     // 导入返回信息
     override var msg = StringBuilder()
@@ -100,7 +102,7 @@ class UserImportListener(
             // 校验通过，持久化至数据库
             val entity = userConverter.importVO2Entity(userImportVO)
             entity.deptId = deptId
-            entity.password = passwordEncoder.encode(CoreConstant.DEFAULT_USER_PASSWORD)
+            entity.password = passwordEncoder.encode(moSecurityProperties.defaultPassword)
             val saveResult = userService.save(entity)
             if (saveResult) {
                 validCount++

@@ -28,9 +28,11 @@ class SecurityFilter(
     private val redisTemplate: RedisTemplate<String, String>
 ) : Filter, Ordered {
 
+    // 路径匹配器线程安全，作为成员复用，避免每次请求重复创建
+    private val pathMatcher: PathMatcher = AntPathMatcher()
+
     override fun doFilter(request: ServletRequest, response: ServletResponse, chain: FilterChain) {
         val httpServletRequest = request as HttpServletRequest
-        val pathMatcher: PathMatcher = AntPathMatcher()
         val uri = httpServletRequest.requestURI
         // 指定资源不拦截
         val ignoreUrlList = CoreConstant.IGNORE_STATIC_LIST.union(ignoreUrlProperties.whitelistPaths)
@@ -42,8 +44,7 @@ class SecurityFilter(
         }
         // 黑名单拦截
         val jti = getJti()
-        val result = redisTemplate.hasKey(CoreConstant.TOKEN_BLACK + jti)
-        if (result) {
+        if (jti.isNotEmpty() && redisTemplate.hasKey(CoreConstant.TOKEN_BLACK + jti)) {
             SecurityUtil.fail(response, ResultCode.INVALID_TOKEN)
             return
         }

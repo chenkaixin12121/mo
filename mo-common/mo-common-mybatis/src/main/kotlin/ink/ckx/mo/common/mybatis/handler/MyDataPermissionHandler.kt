@@ -3,7 +3,6 @@ package ink.ckx.mo.common.mybatis.handler
 import cn.hutool.core.util.StrUtil
 import com.baomidou.mybatisplus.core.toolkit.StringPool
 import com.baomidou.mybatisplus.extension.plugins.handler.DataPermissionHandler
-import ink.ckx.mo.common.core.base.IBaseEnum.Companion.getEnumByValue
 import ink.ckx.mo.common.mybatis.annotation.DataPermission
 import ink.ckx.mo.common.mybatis.enums.DataScopeEnum
 import ink.ckx.mo.common.security.util.getDataScope
@@ -13,6 +12,7 @@ import ink.ckx.mo.common.security.util.isSuperAdmin
 import net.sf.jsqlparser.expression.Expression
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression
 import net.sf.jsqlparser.parser.CCJSqlParserUtil
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * @author chenkaixin
@@ -21,19 +21,27 @@ import net.sf.jsqlparser.parser.CCJSqlParserUtil
  */
 class MyDataPermissionHandler : DataPermissionHandler {
 
+    // 缓存 Mapper 方法定位结果，避免每次 SQL 执行都反射解析
+    private val annotationCache = ConcurrentHashMap<String, DataPermission?>()
+
     override fun getSqlSegment(where: Expression, mappedStatementId: String): Expression {
         // 超级管理员不受数据权限控制
         if (isSuperAdmin()) {
             return where
         }
-        val clazz = Class.forName(mappedStatementId.substring(0, mappedStatementId.lastIndexOf(StringPool.DOT)))
-        val methodName = mappedStatementId.substring(mappedStatementId.lastIndexOf(StringPool.DOT) + 1)
-        // 定位当前执行的 Mapper 方法（分页时 MyBatis-Plus 会生成带 _COUNT 后缀的语句）
-        val method = clazz.declaredMethods.firstOrNull {
-            it.name == methodName || it.name + "_COUNT" == methodName
-        } ?: return where
         // 仅对标注了 @DataPermission 的方法追加数据权限过滤条件
-        val annotation = method.getAnnotation(DataPermission::class.java) ?: return where
+        val annotation = annotationCache.computeIfAbsent(mappedStatementId) { id ->
+            try {
+                val clazz = Class.forName(id.substring(0, id.lastIndexOf(StringPool.DOT)))
+                val methodName = id.substring(id.lastIndexOf(StringPool.DOT) + 1)
+                // 定位当前执行的 Mapper 方法（分页时 MyBatis-Plus 会生成带 _COUNT 后缀的语句）
+                clazz.declaredMethods.firstOrNull {
+                    it.name == methodName || it.name + "_COUNT" == methodName
+                }?.getAnnotation(DataPermission::class.java)
+            } catch (e: ClassNotFoundException) {
+                null
+            }
+        } ?: return where
         return dataScopeFilter(
             annotation.deptAlias,
             annotation.deptIdColumnName,
@@ -64,9 +72,9 @@ class MyDataPermissionHandler : DataPermissionHandler {
             val userColumnName =
                 if (userAlias.isNotBlank()) userAlias + StringPool.DOT + userIdColumnName else userIdColumnName
 
-            // 获取当前用户的数据权限
+            // 获取当前用户的数据权限，无法识别时不做过滤（兜底）
             val dataScope = getDataScope()
-            val dataScopeEnum = getEnumByValue(dataScope, DataScopeEnum::class.java)
+            val dataScopeEnum = DataScopeEnum.entries.firstOrNull { it.value == dataScope } ?: return where
             val deptId: Long
             val userId: Long
             val appendSqlStr: String

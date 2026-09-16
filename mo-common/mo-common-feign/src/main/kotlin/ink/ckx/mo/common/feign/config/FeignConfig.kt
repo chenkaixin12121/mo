@@ -4,6 +4,7 @@ import feign.RequestInterceptor
 import org.springframework.boot.web.servlet.ServletRegistrationBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.http.HttpHeaders
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
 import org.springframework.web.servlet.DispatcherServlet
@@ -35,22 +36,23 @@ class FeignConfig {
      */
     @Bean
     fun requestInterceptor(): RequestInterceptor {
-        return RequestInterceptor {
+        return RequestInterceptor { template ->
             val requestAttributes = RequestContextHolder.getRequestAttributes()
-            if (requestAttributes != null) {
-                val attributes = requestAttributes as ServletRequestAttributes
-                val request = attributes.request
-                // 获取请求头
-                val headerNames = request.headerNames
-                if (headerNames != null) {
-                    while (headerNames.hasMoreElements()) {
-                        val name = headerNames.nextElement()
-                        val values = request.getHeader(name)
-                        // 将请求头保存到模板中
-                        it.header(name, values)
+            if (requestAttributes is ServletRequestAttributes) {
+                val request = requestAttributes.request
+                // 只透传必要的请求头，避免敏感头(Cookie)及 hop-by-hop 头(host/content-length)被转发
+                for (headerName in FORWARDED_HEADERS) {
+                    val value = request.getHeader(headerName)
+                    if (value != null) {
+                        template.header(headerName, value)
                     }
                 }
             }
         }
+    }
+
+    companion object {
+        // 需要向下游透传的请求头白名单
+        private val FORWARDED_HEADERS = setOf(HttpHeaders.AUTHORIZATION)
     }
 }

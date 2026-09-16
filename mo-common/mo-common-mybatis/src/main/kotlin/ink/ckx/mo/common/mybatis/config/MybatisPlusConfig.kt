@@ -26,7 +26,10 @@ class MybatisPlusConfig {
     fun mybatisPlusInterceptor(): MybatisPlusInterceptor {
         val interceptor = MybatisPlusInterceptor()
         // 分页
-        interceptor.addInnerInterceptor(PaginationInnerInterceptor(DbType.MYSQL))
+        val paginationInnerInterceptor = PaginationInnerInterceptor(DbType.MYSQL)
+        // 单页最大记录数限制，防止传入超大 pageSize 拖垮数据库
+        paginationInnerInterceptor.maxLimit = 500L
+        interceptor.addInnerInterceptor(paginationInnerInterceptor)
         // 防全表更新与删除插件
         interceptor.addInnerInterceptor(BlockAttackInnerInterceptor())
         // 数据权限

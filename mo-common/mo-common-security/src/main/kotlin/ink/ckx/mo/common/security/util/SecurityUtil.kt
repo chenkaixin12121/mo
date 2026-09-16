@@ -26,7 +26,7 @@ fun getExp(): Long {
 }
 
 fun getJti(): String {
-    return getTokenAttributes()[JwtClaimNames.JTI].toString()
+    return getTokenAttributes()[JwtClaimNames.JTI]?.toString() ?: ""
 }
 
 fun getAud(): String? {
@@ -75,9 +75,10 @@ private fun getTokenAttributes(): Map<String, Any> {
 
 object SecurityUtil {
 
+    private val mapper = ObjectMapper()
+
     fun fail(response: ServletResponse, resultCode: ResultCode) {
         response.contentType = "application/json"
-        val mapper = ObjectMapper()
         val result: Result<Void> = Result.fail(resultCode)
         mapper.writeValue(response.outputStream, result)
     }

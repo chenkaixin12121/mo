@@ -13,6 +13,7 @@ import ink.ckx.mo.admin.api.model.vo.user.UserDetailVO
 import ink.ckx.mo.admin.api.model.vo.user.UserExportVO
 import ink.ckx.mo.admin.api.model.vo.user.UserLoginVO
 import ink.ckx.mo.admin.api.model.vo.user.UserPageVO
+import ink.ckx.mo.admin.config.MoSecurityProperties
 import ink.ckx.mo.admin.converter.UserConverter
 import ink.ckx.mo.admin.mapper.SysUserMapper
 import ink.ckx.mo.admin.service.SysUserRoleService
@@ -42,6 +43,7 @@ class SysUserServiceImpl(
     val userRoleService: SysUserRoleService,
     val userConverter: UserConverter,
     val redisTemplate: RedisTemplate<String, String>,
+    val moSecurityProperties: MoSecurityProperties,
 ) : ServiceImpl<SysUserMapper, SysUser>(), SysUserService {
 
     /**
@@ -85,7 +87,7 @@ class SysUserServiceImpl(
         val sysUser = userConverter.form2Entity(userForm)
 
         // 设置默认加密密码
-        val defaultEncryptPwd = passwordEncoder.encode(CoreConstant.DEFAULT_USER_PASSWORD)
+        val defaultEncryptPwd = passwordEncoder.encode(moSecurityProperties.defaultPassword)
         sysUser.password = defaultEncryptPwd
 
         // 新增用户

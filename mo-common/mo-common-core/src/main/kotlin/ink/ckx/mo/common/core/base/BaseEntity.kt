@@ -2,6 +2,7 @@ package ink.ckx.mo.common.core.base
 
 import com.baomidou.mybatisplus.annotation.FieldFill
 import com.baomidou.mybatisplus.annotation.TableField
+import com.baomidou.mybatisplus.annotation.TableLogic
 import io.swagger.v3.oas.annotations.media.Schema
 import java.io.Serializable
 import java.time.LocalDateTime
@@ -10,6 +11,7 @@ import java.time.LocalDateTime
 open class BaseEntity(
 
     @Schema(description = "是否删除")
+    @TableLogic(value = "0", delval = "1")
     @TableField(fill = FieldFill.INSERT)
     var deleted: Int? = 0,
 

@@ -52,11 +52,11 @@ interface IBaseEnum<T> {
          * @param <E>
          * @return </E>
          */
-        fun <E> getLabelByValue(value: Any, clazz: Class<E>): String where E : Enum<E>, E : IBaseEnum<*> {
+        fun <E> getLabelByValue(value: Any, clazz: Class<E>): String? where E : Enum<E>, E : IBaseEnum<*> {
             Objects.requireNonNull(value)
             val allEnums = EnumSet.allOf(clazz) // 获取类型下的所有枚举
             val matchEnum = allEnums.firstOrNull { ObjectUtil.equal(it.value, value) }
-            return matchEnum?.label.toString()
+            return matchEnum?.label
         }
 
         /**

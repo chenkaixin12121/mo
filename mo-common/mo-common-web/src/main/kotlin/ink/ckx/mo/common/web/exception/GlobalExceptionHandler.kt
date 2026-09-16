@@ -27,7 +27,7 @@ class GlobalExceptionHandler {
     private val log = KotlinLogging.logger {}
 
     @ExceptionHandler(ConstraintViolationException::class)
-    fun <T> handlerHttpMessageNotReadableException(e: ConstraintViolationException): Result<T> {
+    fun <T> handlerConstraintViolationException(e: ConstraintViolationException): Result<T> {
         val msg = e.constraintViolations.joinToString("；") { it.message }
         return fail(ResultCode.PARAM_ERROR, msg)
     }

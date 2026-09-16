@@ -105,11 +105,6 @@ interface CoreConstant {
         const val SUPER_ADMIN_CODE = "SUPER-ADMIN"
 
         /**
-         * 系统默认密码
-         */
-        const val DEFAULT_USER_PASSWORD = "123456"
-
-        /**
          * token 黑名单
          */
         const val TOKEN_BLACK = "TOKEN_BLACK:"
